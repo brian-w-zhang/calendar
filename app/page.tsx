@@ -54,7 +54,7 @@ export default function HomePage() {
         position="top-center"
         toastOptions={{
           duration: 4000,
-          className: 'font-medium bg-gradient-to-r from-green-100 to-green-50 border border-green-300 text-green-800 shadow-lg',
+          className: 'font-medium',
         }}
       />
     </div>

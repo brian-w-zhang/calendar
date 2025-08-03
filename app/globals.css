@@ -112,6 +112,18 @@
   --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
+/* Override shadcn dialog max-width for summary modal */
+[data-radix-dialog-content] {
+  max-width: 95vw !important;
+  width: 95vw !important;
+}
+
+/* Or target specifically if you have multiple dialogs */
+.summary-modal [data-radix-dialog-content] {
+  max-width: 95vw !important;
+  width: 95vw !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
