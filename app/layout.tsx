@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CalendarAI - Understand Yourself Through Your Calendar",
-  description: "Get AI-powered insights about your habits, productivity patterns, and lifestyle from your Google Calendar data. Privacy-first, no data storage.",
+  title: "Bond Calendar - Understand Yourself Through Your Calendar",
+  description: "Discover AI-powered insights about your habits, productivity patterns, and lifestyle from your Google Calendar data. Privacy-first, no data storage.",
 };
 
 export default function RootLayout({
