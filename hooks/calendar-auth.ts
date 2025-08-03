@@ -1,4 +1,3 @@
-// hooks/calendar-auth.ts
 'use client'
 
 import { useState } from 'react'
@@ -9,11 +8,14 @@ declare global {
   }
 }
 
+export type TimeFrame = '30days' | '1year' | 'alltime'
+
 export function useCalendarAuth() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [calendarData, setCalendarData] = useState<any[]>([])
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState<TimeFrame>('1year')
 
   // Load Google Identity Services
   const loadGoogleIdentityServices = () => {
@@ -45,20 +47,42 @@ export function useCalendarAuth() {
     })
   }
 
+  // Get time range based on selected timeframe
+  const getTimeRange = (timeFrame: TimeFrame) => {
+    const now = new Date().toISOString()
+    let timeMin: string
+
+    switch (timeFrame) {
+      case '30days':
+        timeMin = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        break
+      case '1year':
+        timeMin = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()
+        break
+      case 'alltime':
+        // Go back 10 years for "all time" (Google Calendar API doesn't support unlimited history)
+        timeMin = new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString()
+        break
+      default:
+        timeMin = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()
+    }
+
+    return { timeMin, timeMax: now }
+  }
+
   // Fetch calendar data using access token
-  const fetchCalendarData = async (accessToken: string) => {
+  const fetchCalendarData = async (accessToken: string, timeFrame: TimeFrame = selectedTimeFrame) => {
     try {
-      console.log('🗓️ Fetching calendar data...')
+      console.log(`🗓️ Fetching calendar data for ${timeFrame}...`)
       
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-      const now = new Date().toISOString()
+      const { timeMin, timeMax } = getTimeRange(timeFrame)
       
       const response = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/primary/events?` +
         new URLSearchParams({
-          timeMin: thirtyDaysAgo,
-          timeMax: now,
-          maxResults: '100',
+          timeMin,
+          timeMax,
+          maxResults: '2500', // Increased from 100 to get more events
           singleEvents: 'true',
           orderBy: 'startTime'
         }),
@@ -78,7 +102,7 @@ export function useCalendarAuth() {
       
       const data = await response.json()
       
-      console.log('✅ Calendar events fetched:', data.items?.length || 0, 'events')
+      console.log(`✅ Calendar events fetched for ${timeFrame}:`, data.items?.length || 0, 'events')
       console.log('Sample events:', data.items?.slice(0, 3))
       
       setCalendarData(data.items || [])
@@ -96,6 +120,7 @@ export function useCalendarAuth() {
     console.log('Environment check:')
     console.log('- Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? '✅ Present' : '❌ Missing')
     console.log('- Current origin:', window.location.origin)
+    console.log('- Selected time frame:', selectedTimeFrame)
     
     if (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
       setError('Google Client ID not configured')
@@ -131,9 +156,9 @@ export function useCalendarAuth() {
           setIsSignedIn(true)
           
           try {
-            // Fetch calendar data
-            const events = await fetchCalendarData(response.access_token)
-            console.log(`✅ Successfully fetched ${events.length} calendar events`)
+            // Fetch calendar data with selected time frame
+            const events = await fetchCalendarData(response.access_token, selectedTimeFrame)
+            console.log(`✅ Successfully fetched ${events.length} calendar events for ${selectedTimeFrame}`)
             
             // Here you can process the events for AI analysis
             // For now, just log some basic stats
@@ -169,11 +194,27 @@ export function useCalendarAuth() {
     }
   }
 
+  const getTimeFrameLabel = (timeFrame: TimeFrame) => {
+    switch (timeFrame) {
+      case '30days':
+        return 'last 30 days'
+      case '1year':
+        return 'last year'
+      case 'alltime':
+        return 'all time'
+      default:
+        return 'last year'
+    }
+  }
+
   return {
     isLoading,
     isSignedIn,
     error,
     calendarData,
-    handleGoogleCalendarAuth
+    selectedTimeFrame,
+    setSelectedTimeFrame,
+    handleGoogleCalendarAuth,
+    getTimeFrameLabel
   }
 }

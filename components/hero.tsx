@@ -1,9 +1,10 @@
-
-// components/hero.tsx
 'use client'
 
 import { Button } from '@/components/ui/button'
 import { Calendar, BarChart } from 'lucide-react'
+import { useEffect } from 'react'
+import { toast } from 'sonner'
+import { TimeFrame } from '../hooks/calendar-auth'
 
 interface HeroSectionProps {
   handleGoogleCalendarAuth: () => Promise<void>
@@ -11,15 +12,49 @@ interface HeroSectionProps {
   isSignedIn: boolean
   error: string | null
   calendarData: any[]
+  selectedTimeFrame: TimeFrame
+  setSelectedTimeFrame: (timeFrame: TimeFrame) => void
+  getTimeFrameLabel: (timeFrame: TimeFrame) => string
 }
+
+const timeFrameOptions: { value: TimeFrame; label: string }[] = [
+  { value: '30days', label: 'Last 30 Days' },
+  { value: '1year', label: 'Last Year' },
+  { value: 'alltime', label: 'All Time' }
+]
 
 export default function HeroSection({
   handleGoogleCalendarAuth,
   isLoading,
   isSignedIn,
   error,
-  calendarData
+  calendarData,
+  selectedTimeFrame,
+  setSelectedTimeFrame,
+  getTimeFrameLabel
 }: HeroSectionProps) {
+  
+  // Show success toast when calendar data is loaded
+  useEffect(() => {
+    if (isSignedIn && calendarData.length > 0) {
+      toast.success(
+        `Successfully connected! Found ${calendarData.length} events from the ${getTimeFrameLabel(selectedTimeFrame)}.`,
+        {
+          duration: 4000,
+        }
+      )
+    }
+  }, [isSignedIn, calendarData.length, selectedTimeFrame, getTimeFrameLabel])
+
+  // Show error toast when there's an error
+  useEffect(() => {
+    if (error) {
+      toast.error(`Connection failed: ${error}`, {
+        duration: 5000,
+      })
+    }
+  }, [error])
+
   return (
     <section className="relative overflow-hidden">
       {/* Gradient Background */}
@@ -40,52 +75,64 @@ export default function HeroSection({
             from your Google Calendar data. No storage, no tracking. Just insights.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Button 
-              onClick={handleGoogleCalendarAuth}
-              disabled={isLoading}
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                  Connecting...
-                </>
-              ) : isSignedIn ? (
-                <>
-                  <BarChart className="mr-3 h-5 w-5" />
-                  Generate My Summary ({calendarData.length} events)
-                </>
-              ) : (
-                <>
-                  <Calendar className="mr-3 h-5 w-5" />
-                  Connect Google Calendar
-                </>
+          <div className="flex flex-col items-center justify-center gap-6">
+            {/* Main action area */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              {/* Connect button or Generate button */}
+              <Button 
+                onClick={handleGoogleCalendarAuth}
+                disabled={isLoading}
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    Connecting...
+                  </>
+                ) : isSignedIn ? (
+                  <>
+                    <BarChart className="mr-3 h-5 w-5" />
+                    Generate My Summary ({calendarData.length} events)
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="mr-3 h-5 w-5" />
+                    Connect Google Calendar
+                  </>
+                )}
+              </Button>
+              
+              {/* Time frame selector - only show when not signed in */}
+              {!isSignedIn && (
+                <div className="bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-lg border border-gray-200">
+                  <div className="flex items-center">
+                    {timeFrameOptions.map((option, index) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setSelectedTimeFrame(option.value)}
+                        disabled={isLoading}
+                        className={`
+                          px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 cursor-pointer
+                          ${selectedTimeFrame === option.value
+                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                          }
+                          ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                        `}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
-            </Button>
+            </div>
             
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 max-w-md shadow-sm">
-                <p className="text-sm text-red-600">
-                  <strong>Error:</strong> {error}
-                </p>
-              </div>
-            )}
-            
-            {isSignedIn && calendarData.length > 0 && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
-                <p className="text-sm text-green-600 font-medium">
-                  ✅ Successfully connected! Found {calendarData.length} events from the last 30 days.
-                </p>
-              </div>
-            )}
-            
-            {!isSignedIn && !error && (
-              <p className="text-sm text-gray-500 mt-2">
-                Your data stays private and is never stored
-              </p>
-            )}
+            {/* Privacy message */}
+            <p className="text-sm text-gray-500 mt-2">
+              🔒 Your data stays private and is never stored
+            </p>
           </div>
         </div>
       </div>
