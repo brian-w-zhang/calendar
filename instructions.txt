@@ -1,0 +1,12 @@
+# Google Calendar Import
+
+# Main Requirements
+
+Build a website that a user comes in, and it asks for user’s Google Calendar permission, then grab data from it and generate a personal summary about this person.
+
+# Detailed Requirement
+
+- Website should be live and hosted somewhere
+- Don’t store user’s information, meaning result in every session will get cleaned up
+- The personal summary will be used later to help making decisions or giving recommendations to the user
+- Typescript preferred
