@@ -1,5 +1,9 @@
 # Bond Calendar
 
+<img width="1512" height="856" alt="image" src="https://github.com/user-attachments/assets/0bed9ba9-f9d6-4dfb-a282-bd1128374708" />
+<img width="1512" height="856" alt="image" src="https://github.com/user-attachments/assets/d23213a1-5f14-45ce-81de-735e5185ee2f" />
+
+
 Bond Calendar is a privacy-first web application that helps you understand yourself through your Google Calendar data. Built with Next.js, TypeScript, shadcn/ui, and OpenAI, this project lets you securely connect your Google Calendar, analyzes your events in real time, and generates a personalized AI summary about your habits, lifestyle, and productivity patterns. No user data is ever stored - everything is processed in-memory, and your information is wiped as soon as you refresh, close the tab, or clear cookies. There are no databases, no local storage, and no tracking.
 
 ## How It Works
