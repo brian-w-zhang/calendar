@@ -83,4 +83,4 @@ This project is a demonstration of **privacy-first**, **AI-powered** personal an
 
 * ❌ No tracking
 * ❌ No data storage
-* ✅ All calendar data is processed **in real-time** and immediately **discarded** after generating your summary.
+* ✅ All calendar data is processed **in real-time** and immediately discarded when session ends and cookies are cleared.
